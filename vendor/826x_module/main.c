@@ -97,6 +97,7 @@ int main(void)
 		libDiyModeWorkThread();//diy mode,add by fn in 20180620
 		libTime_Onoff_thread();
 		libRGBW_testing();
+		libRGBW_testing();
 		
 		if(clock_time_exceed(taskTick, 20000)){
 			taskTick = clock_time();
