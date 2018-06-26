@@ -22,7 +22,7 @@
 
 
 extern my_fifo_t hci_rx_fifo;
-extern void timer_irq_proc(void);
+extern void timer_irq_proc(void);wfdsafdsf af 
 
 #define CompanyName 	"ihoment "
 
@@ -85,6 +85,7 @@ int main(void)
 	tl8267_Ble_Init();
 	tl8267_Bsp_Init();		
     irq_enable();
+	Board_Message_Output();
 	Board_Message_Output();
 	setAMIC_gain_level(8);//这里必须跟tl8267_audio.c里的gGain相同
 	while (1) 
