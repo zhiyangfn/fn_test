@@ -13,6 +13,8 @@
 //#include "libledsend.h"
 #include "libScenes.h"
 #include "main_light.h"
+#include "libworkthread.h"
+#include "light.h"
 //#include "tl826x_led.h"
 
 #define MAX(a,b,c)   (a>b?(a>c?a:c):(b>c?b:c))
@@ -28,7 +30,11 @@
 #define COLOR_COOL_WHITE	255 ,255 ,255
 #define COLOR_WARM_WHITE	255 ,184 ,114
 
-#define gm_printf U1_printf("gm: ");U1_printf
+#ifdef RELEASE_MODE
+	#define gm_printf U1_printf("gm: ");U1_printf
+#else
+	#define gm_printf
+#endif
 
 
 static u8 gSceneRunning = 0;
@@ -50,7 +56,7 @@ static u16 max_step =0;
 
 static u8 color_cnt =0;
 static u8 step =1;
-static u8 rgb_scale=0;
+//static u8 rgb_scale=0;
 void led_set_change_para(u16 r,u16 g, u16 b,u16 luminance, u32 reach_time,u32 static_time)//just execute one
 {
 //	if(reach_time<1000){
@@ -107,10 +113,10 @@ char led_gradual_change(void)
 				g_cur =g_aim;
 				b_cur =b_aim;
 				//libzled_setRGB_Color_lum(r_cur,g_cur,b_cur,255,rgb_scale);
-				light_adjust_RGB_hw(r_cur,g_cur,b_cur,100);
+				setLedRGBValue(r_cur,g_cur,b_cur);
 				return 1;
 			}
-			light_adjust_RGB_hw(r_cur,g_cur,b_cur,100);
+			setLedRGBValue(r_cur,g_cur,b_cur);
 			//libzled_setRGB_Color_lum(r_cur,g_cur,b_cur,255,rgb_scale);
 			return 0;
 		}
@@ -119,7 +125,7 @@ char led_gradual_change(void)
 
 		if(hold_time == 0)  return 3;//hold forever
 		//libzled_setRGB_Color_lum(r_cur,g_cur,b_cur,255,rgb_scale);
-		light_adjust_RGB_hw(r_cur,g_cur,b_cur,100);
+		setLedRGBValue(r_cur,g_cur,b_cur);
 		if(execute_hold_time <=0 ){
 			step =1;
 			return 2;//one cycle finish
@@ -154,7 +160,7 @@ void libSceneLight_set(u8 SceneMode)
 	max_step =0;
 	step =1;
 	color_cnt=0;
-	gm_printf("libSceneLight_set :%d\r\n",SceneMode);
+	gm_printf("libSceneLight_set :%d\r\n",gSceneMode);
 }
 
 
@@ -224,11 +230,6 @@ const u16 scene_easiness[]={
 u8 libSceneLight_work_thread(void)
 {
 	char step_status;
-	/*if(0==gSceneRunning)		//
-	{
-		return 0;
-	}*/
-
 	switch(gSceneMode)
 	{
 		case SCENE_SUNRISE:
@@ -249,8 +250,8 @@ u8 libSceneLight_work_thread(void)
 									scene_sunset[6*color_cnt+4],scene_sunset[6*color_cnt+5]*1000,scene_sunset[6*color_cnt+6]*1000);
 				color_cnt++;
 			}else if(step_status ==3 ){
-				//stop_led_service();
-				//g_config_param.led_status = 0;
+				setDefaultWorkStatus();
+				closeAllLed();
 			}
 
 			break;

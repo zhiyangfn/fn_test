@@ -9,7 +9,7 @@
 #include "tl8267_uart.h"
 #include "libworkthread.h"
 #include "main_light.h"
-
+#include "light.h"
 static u8 reset_diy_mode=0;//apply to skip the delay firstly,and avoid to set music mode repetitively
 
 extern config_parameter_t g_config_param;
@@ -25,7 +25,12 @@ u8 count_diy_color(u8 *color_cnt,u8 *color);
 
 #define INTERVAL_NUM 1//apply to runing mode,must be >=1
 #define BLOCK_LED_NUM 2//apply to runing mode,must be >=1
-#define diyPrintf U1_printf("Diy : ");U1_printf
+
+#ifdef RELEASE_MODE
+	#define diyPrintf U1_printf("Diy : ");U1_printf
+#else
+	#define diyPrintf
+#endif
 
 #define COLOR_BYTES 3
 #define LED_CHIP_MAX_NUM 60
@@ -94,7 +99,7 @@ u8 lightDiyGradualLed(u8 *aim_color,u8 *cur_color,u8 color_num_cnt,u8 grad_step,
 {
 	u8 light_set_color[COLOR_BYTES]={0,0,0};
 	u8 light_aim_color[COLOR_BYTES]={0,0,0};
-	u8 i,i1;
+	u8 i;
 	//u8 one_color_num,color_buf_offset=0;
 	//u8 set_color_buf[LED_CHIP_MAX_NUM*COLOR_BYTES];
 	u8 color_reach_cnt=0;
@@ -147,7 +152,7 @@ u8 lightDiyGradualLed(u8 *aim_color,u8 *cur_color,u8 color_num_cnt,u8 grad_step,
 			break;
 	}
 */
-	light_adjust_RGB_hw(light_set_color[0],light_set_color[1],light_set_color[2],100);
+	setLedRGBValue(light_set_color[0],light_set_color[1],light_set_color[2]);
 	//libzled_send(set_color_buf,led_chip_num*COLOR_BYTES,0);
 	if(color_reach_cnt >= COLOR_BYTES*color_num_cnt)
 	{
@@ -182,7 +187,6 @@ void setDiyGradualMode()
 	static u8 diy_gradual_step_cnt=0;
 	static u8 gradual_circuit_color_cnt=0;
 	u8 color_segm_num;
-	u8 i;
 	u8 speed;
 	u8 color[COLOR_TYPE_NUM_LIMITE][COLOR_BYTES]={{0,0,0},{0,0,0},{0,0,0},{0,0,0}};
 	u8 cur_color[COLOR_BYTES]={0,0,0};
@@ -264,7 +268,6 @@ void setDiyJumpingMode()
 	u8 color[COLOR_TYPE_NUM_LIMITE][COLOR_BYTES]={{0,0,0},{0,0,0},{0,0,0},{0,0,0}};
 	u8 set_color[COLOR_BYTES]={0,0,0};
 	u8 color_cnt=0;
-	u8 i=0;
 
 	//speed 100-0 equal to 500ms-10.5s
 	//speed=g_config_param.led_work_mode.diy_mode.diy_speed;
@@ -285,7 +288,7 @@ void setDiyJumpingMode()
 	{
 		memcpy(set_color,color+color_jump_circult_cnt,COLOR_BYTES);
 		//lightDiySegmentation(set_color,1);
-		light_adjust_RGB_hw(set_color[0],set_color[1],set_color[2],30);
+		setLedRGBValue(set_color[0],set_color[1],set_color[2]);
 	}
 	if(++color_jump_circult_cnt >= color_cnt)
 		color_jump_circult_cnt=0;
@@ -317,7 +320,7 @@ void setDiyClickMode()
 	{
 		//color_filcker_status_cnt++;
 		memcpy(set_color,color+color_filcker_circult_cnt,COLOR_BYTES);
-		light_adjust_RGB_hw(set_color[0],set_color[1],set_color[2],30);//light the led
+		setLedRGBValue(set_color[0],set_color[1],set_color[2]);//light the led
 		color_filcker_status_cnt=0;
 		if(++color_filcker_circult_cnt >= color_cnt)
 			color_filcker_circult_cnt=0;
@@ -326,7 +329,7 @@ void setDiyClickMode()
 	else		
 	{
 		color_filcker_status_cnt++;
-		light_adjust_RGB_hw(0,0,0,30);;//close the led
+		setLedRGBValue(0,0,0);;//close the led
 	}
 }
 

@@ -12,13 +12,21 @@
 #include "../../proj_lib/ble_ll/blueLight.h"
 #include "main_light.h"
 #include "libworkthread.h"
+#include "libflashdata.h"
+#include "tl8267_uart.h"
+#include "light.h"
 #define LED_INDICATE_VAL    (0xff)
 
 #define LIGHT_ADJUST_STEP_EN    0
 #define LIGHT_NOTIFY_MESH_EN    1
 
-#define UART_ENABLE             1
-
+#ifdef RELEASE_MODE
+	#define UART_ENABLE         1
+	#define LightPrintf	U1_printf("light: ");U1_printf
+#else
+	#define UART_ENABLE         0
+	#define LightPrintf
+#endif
 #if UART_ENABLE
 #include "../../proj/drivers/uart.h"
 
@@ -187,7 +195,11 @@ void light_adjust_G(u8 val, u8 lum){
 }
 
 void light_adjust_B(u8 val, u8 lum){
-    pwm_set_lum (PWMID_B, get_pwm_cmp(val, lum), 0);
+#ifdef RELEASE_MODE
+    pwm_set_lum (PWMID_B, get_pwm_cmp(val, lum), 1);//reverse level
+#else
+    pwm_set_lum (PWMID_B, get_pwm_cmp(val, lum), 0);//reverse level
+#endif
 }
 
 void light_adjust_RGB_hw(u8 val_R, u8 val_G, u8 val_B, u8 lum){
@@ -345,7 +357,8 @@ void sync_cmd_action_callback(u8 sync_reset)
 
 void irq_timer1(void){
 	static u8 a_irq_timer1;
-
+	static u16 save_data_cnt=0;
+	//apply to scene mode 
 	extern u32 execute_step_time;
 	extern u32 execute_hold_time;
 	if(execute_step_time!=0 && execute_step_time>=1)execute_step_time--;
@@ -376,6 +389,12 @@ void irq_timer1(void){
 #if UART_ENABLE
     uart_ErrorCLR();
 #endif
+	if(++save_data_cnt > 500)//save config every 5s
+	{		
+		if(testIfDataChange())
+			time2SaveConfig();
+		save_data_cnt=0;
+	}
 }
 
 void	cfg_led_event (u32 e)
@@ -706,20 +725,20 @@ void light_sim_notify(void){    // just local light can use.
 
 #if (LIGHT_NOTIFY_MESH_EN)
 void light_sim_notify_mesh(void){    // all light can use.
-	static u32 last_time = 0;
-	extern u8 notify_phone_flag;
-	if(clock_time_exceed(last_time, 5000*1000)){
-        if((!is_tx_cmd_busy()) && (notify_phone_flag ==1)){   // it must be used, if want enough bridges(default is BRIDGE_MAX_CNT 8).
-    		last_time = clock_time();
-    		static u8 cnt = 0;
-    		u8 op_para[16] = {0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    		op_para[0] = LGT_CMD_NOTIFY_MESH;
-    		op_para[3] = (++cnt);
-			getNotifyData(op_para+4);
-    		light_slave_tx_command(op_para, 0xFFFF);
-			notify_phone_flag=0;
-		}
+	extern u8 notify_phone_flag;//add by fn
+	//if(clock_time_exceed(last_time, 1)){
+		//last_time = clock_time();
+    if((!is_tx_cmd_busy()) && (notify_phone_flag ==1)){   // it must be used, if want enough bridges(default is BRIDGE_MAX_CNT 8).
+		//last_time = clock_time();
+		//static u8 cnt = 0;
+		u8 op_para[16] = {0, 0, 0, 0, 1, 1, 1, 3, 3, 3, 4, 4, 4, 5, 5, 5};
+		op_para[0] = LGT_CMD_NOTIFY_MESH;
+		//op_para[3] = (++cnt);
+		getNotifyData(op_para+3);
+		light_slave_tx_command(op_para, 0xFFFF);
+		notify_phone_flag=0;
 	}
+	//}
 }
 #endif
 
@@ -911,11 +930,17 @@ void rf_link_data_callback (u8 *p)
             if(op == LGT_CMD_LIGHT_ONOFF){
                 if(params[0] == LIGHT_ON_PARAM){
             		light_onoff(1);
+            		setLedStatus(1);
+					modeSetInit();
+					LightPrintf("set led light on.\n");
         		}else if(params[0] == LIGHT_OFF_PARAM){
         		    if(ON_OFF_FROM_OTA == params[3]){ // only PWM off, 
         		        light_adjust_RGB(0, 0, 0, 0);
         		    }else{
             		    light_onoff(0);
+            		    setLedStatus(0);
+						setLedRGBValue(0, 0, 0);
+						LightPrintf("set led light off.\n");
             		}
         		}else if(params[0] == LIGHT_SYNC_REST_PARAM){
                     #if (SYNC_TIME_EN)
@@ -952,7 +977,7 @@ void rf_link_data_callback (u8 *p)
 						get_mac_en = 0;		// set success
 					}
     			}
-        	}else if(op == LGT_CMD_LIGHT_SET){
+        	}else if((op == LGT_CMD_LIGHT_SET) && (getLedStatus() == 1)){
         	    if(music_time){
         	        last_music_tick = clock_time();
         	    }
@@ -981,8 +1006,8 @@ void rf_link_data_callback (u8 *p)
 				else
 				if(CURRENT_MODE==2)//调光
 				{
-					pwm_set_lum (PWMID_C1, get_pwm_cmp((100-CT_VAL)*2.5,led_lum), 0);
-					pwm_set_lum (PWMID_W, get_pwm_cmp((CT_VAL)*2.5,led_lum), 0);
+					pwm_set_lum (PWMID_C1, get_pwm_cmp((100-CT_VAL)*255/100,led_lum), 0);
+					pwm_set_lum (PWMID_W, get_pwm_cmp((CT_VAL)*255/100,led_lum), 0);
 
 				}
                 if(!music_time){
@@ -990,7 +1015,7 @@ void rf_link_data_callback (u8 *p)
                     device_status_update();
                 }
             }
-            else if(op == LGT_CMD_LIGHT_RC_SET_RGB){
+            else if((op == LGT_CMD_LIGHT_RC_SET_RGB) && (getLedStatus() == 1)){
         		if(light_off || params[0] > RGB_MAP_MAX){
         			return;
         		}
@@ -1003,7 +1028,7 @@ void rf_link_data_callback (u8 *p)
                 
                 lum_changed_time = clock_time();
             }
-        	else if (op == LGT_CMD_SET_RGB_VALUE)
+        	else if ((op == LGT_CMD_SET_RGB_VALUE) && (getLedStatus() == 1))
         	{
         	    if(light_off){
         	        return;
@@ -1025,18 +1050,16 @@ void rf_link_data_callback (u8 *p)
         		    if(CURRENT_MODE!=1)
 					{
         		    	CURRENT_MODE=1;
-						light_adjust_RGB(led_val[0], led_val[1], led_val[2], led_lum);
-						pwm_set_lum (PWMID_C1,0, 0);
-						pwm_set_lum (PWMID_W,0, 0);
+						setLedRGBValue(led_val[0], led_val[1], led_val[2]);
 
 					}else
 						if(CURRENT_MODE==1)
 						{
-							light_adjust_RGB(led_val[0], led_val[1], led_val[2], led_lum);
+							setLedRGBValue(led_val[0], led_val[1], led_val[2]);
 						}
 
 
-        		}else if(params[0] == 5){		//CT
+        		}/*else if(params[0] == 5){		//CT
         		    //temporary processing as brightness
                     if(light_off || params[1] > 100 || led_lum == params[1]){
                         return;
@@ -1060,7 +1083,7 @@ void rf_link_data_callback (u8 *p)
 						pwm_set_lum (PWMID_W, get_pwm_cmp((CT_VAL)*2.5,led_lum), 0);
 
 					}
-        		}
+        		}*/
         		
                 lum_changed_time = clock_time();
         	}
@@ -1620,6 +1643,9 @@ void  user_init(void)
 		//retrieve lumen value
 		light_lum_retrieve();
 
+
+		pwm_set_cmp(PWMID_W,0);
+	    pwm_set_cmp(PWMID_C1,0);
 		pwm_start (PWMID_R);
 		pwm_start (PWMID_G);
 		pwm_start (PWMID_B);
@@ -1634,7 +1660,7 @@ void  user_init(void)
 		pwm_set_cmp(PWMID_W,0);
 	    pwm_set_cmp(PWMID_C1,0);
 	}
-	
+
 	rf_link_slave_init (40000);
 
     extern int factory_reset_handle ();
@@ -1752,3 +1778,38 @@ void  user_init(void)
 }
 #endif
 
+
+void setLedRGBValue(u8 r_value,u8 g_value,u8 b_value)
+{
+	if(getLedStatus() == 1)
+		light_adjust_RGB(r_value,g_value,b_value , led_lum);//设置亮度
+	else
+		light_adjust_RGB(0,0,0,0);
+	pwm_set_lum (PWMID_C1, get_pwm_cmp(0,led_lum), 0);
+	pwm_set_lum (PWMID_W, get_pwm_cmp(0,led_lum), 0);
+}
+
+void setRGBSaveValue(u8 r_save,u8 g_save,u8 b_save)
+{
+	led_val[0]=r_save;
+	led_val[1]=g_save;
+	led_val[2]=b_save;
+	light_lum_store();
+}
+
+void setCTValue(u8 color_tem)
+{	
+	setLedRGBValue(0,0,0);
+	setRGBSaveValue(0,0,0);
+	if(color_tem <= 100)
+	{
+		pwm_set_lum (PWMID_C1, get_pwm_cmp((100-color_tem)*255/100,led_lum), 0);
+		pwm_set_lum (PWMID_W, get_pwm_cmp((color_tem)*255/100,led_lum), 0);
+	}
+	else
+	{
+		pwm_set_lum (PWMID_C1, get_pwm_cmp((100)*255/100,led_lum), 0);
+		pwm_set_lum (PWMID_W, get_pwm_cmp((100)*255/100,led_lum), 0);
+	}
+
+}

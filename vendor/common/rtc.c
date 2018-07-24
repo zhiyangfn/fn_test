@@ -110,7 +110,6 @@ enum{
 enum{
 	ALARM_TYPE_DAY = 0,
 	ALARM_TYPE_WEEK,
-	ALARM_CMD_ONCE,//add by fn in 20180717
 	ALARM_TYPE_MAX,
 };
 
@@ -470,11 +469,7 @@ void alarm_event_check(){
                         }
                     break;
 
-					case ALARM_CMD_ONCE://alarm once,add by fn in 20180717
-							result = 1;
-							p_alarm->par1.enable=0;
-
-                    default:
+					default:
                         break;
                 }
                 

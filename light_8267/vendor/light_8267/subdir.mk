@@ -5,6 +5,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../vendor/light_8267/libdiylight.c \
+../vendor/light_8267/libflashdata.c \
 ../vendor/light_8267/libscenes.c \
 ../vendor/light_8267/libworkthread.c \
 ../vendor/light_8267/main.c \
@@ -15,6 +16,7 @@ C_SRCS += \
 
 OBJS += \
 ./vendor/light_8267/libdiylight.o \
+./vendor/light_8267/libflashdata.o \
 ./vendor/light_8267/libscenes.o \
 ./vendor/light_8267/libworkthread.o \
 ./vendor/light_8267/main.o \

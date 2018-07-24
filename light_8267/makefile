@@ -52,7 +52,7 @@ main-build: ble_mesh_light.elf secondary-outputs
 ble_mesh_light.elf: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: TC32 C Linker'
-	tc32-elf-ld --gc-sections -L"E:\myshare\MeshLight8267-demo\ble_mesh_release_20171110_V1.D\sdk\proj_lib" -T ../boot.link -o"ble_mesh_light.elf" $(OBJS) $(USER_OBJS) $(LIBS)
+	tc32-elf-ld --gc-sections -L"E:\myshare\H6082\proj_lib" -T ../boot.link -o"ble_mesh_light.elf" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -80,7 +80,7 @@ clean:
 	-@echo ' '
 
 pre-build:
-	-"E:\myshare\MeshLight8267-demo\ble_mesh_release_20171110_V1.D\sdk/getver.sh"
+	-"E:\myshare\H6082/getver.sh"
 	-@echo ' '
 
 secondary-outputs: $(LST) $(FLASH_IMAGE) $(SIZEDUMMY)

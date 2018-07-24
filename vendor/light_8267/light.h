@@ -5,8 +5,12 @@
 extern "C" {
 #endif
 
+#define RELEASE_MODE  //define release board
+
 #define _USER_CONFIG_DEFINED_	1	// must define this macro to make others known
 #define	__LOG_RT_ENABLE__		0
+
+
 
 #define CHIP_TYPE				CHIP_TYPE_8267		// 8866-24, 8566-32
 
@@ -92,19 +96,34 @@ extern "C" {
 
 #define ADC_TEMP_ENABLE				1
 
-#define PWM_G     GPIO_PB4			//GPIO_PC2//red
-#define PWM_B     GPIO_PE0			//GPIO_PC3//green
-#define PWM_R     GPIO_PB6			//GPIO_PB6//blue
+#ifdef RELEASE_MODE
+	#define PWM_G     GPIO_PB6//GPIO_PC2//GPIO_PB4			//GPIO_PC2//red
+	#define PWM_B     GPIO_PB1//GPIO_PE0			//GPIO_PC3//green
+	#define PWM_R     GPIO_PE0//GPIO_PB6			//GPIO_PB6//blue
 
-#define PWM_W     GPIO_PB5//GPIO_PB4			////while LIGHT
-#define PWM_C1    GPIO_PA3			////COLD  LIGHT
+	#define PWM_W     GPIO_PB4//GPIO_PB4			////while LIGHT
+	#define PWM_C1    GPIO_PE1//GPIO_PE1			////COLD  LIGHT
 
-#define PWMID_C1    3   ///1
-#define PWMID_G     4  //22
-#define PWMID_B     0	//33
-#define PWMID_R     5  //5
-#define PWMID_W     1
+	#define PWMID_G     5//2//4  //22
+	#define PWMID_B     2//0	//33
+	#define PWMID_R     0//5  //5
 
+	#define PWMID_W    4// 1
+	#define PWMID_C1  1 //1// 3   ///1
+#else
+	#define PWM_R     GPIO_PB6//GPIO_PC2			//red
+	#define PWM_G     GPIO_PC2			//green
+	#define PWM_B     GPIO_PC3//GPIO_PB6			//blue
+
+	#define PWM_W     GPIO_PB4			//while LIGHT
+	#define PWM_C1    GPIO_PA3			//COLD  LIGHT
+
+	#define PWMID_C1    1
+	#define PWMID_R     5//2
+	#define PWMID_G     2
+	#define PWMID_B     3//5
+	#define PWMID_W     4
+#endif
 #define GATEWAY_EN              0
 #if (GATEWAY_EN)
 #define SWITCH_MODE_BUTTON1     GPIO_PC5

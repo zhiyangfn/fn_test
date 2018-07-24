@@ -9,6 +9,7 @@
 
 #include "tl8267_uart.h"
 #include "libworkthread.h"
+#include "libflashdata.h"
 
 extern void user_init();
 extern void proc_button_ahead();
@@ -33,12 +34,16 @@ int main (void) {
 
 	rf_drv_init(0);
 
+
     user_init ();
+
+    systemFlashInit();
+
+    modeSetInit();
 
     usb_log_init ();
 
     irq_enable();
-
 
 	while (1) {
 #if(MODULE_WATCHDOG_ENABLE)
@@ -46,7 +51,6 @@ int main (void) {
 #endif
 		main_loop ();
 		masterWorkThread();
-		//U1_printf("1111111");
 	}
 }
 
