@@ -12,4 +12,5 @@ void systemFlashInit(void);
 void time2SaveConfig(void);
 void time2SaveConfig(void);
 u8 testIfDataChange(void);
+void initFlashConfig(void);
 #endif /* LIBFLASHDATA_H_ */

@@ -44,8 +44,8 @@ void initFlashConfig()
 
 	g_config_param.led_status=0;
 	g_config_param.status_station=0;
-	memset(g_config_param.uid,0xff,sizeof(g_config_param.uid));
-	memset(g_config_param.param_buf,0,20);
+	memset(g_config_param.uid,0xff,sizeof(g_config_param.uid));//clear uid
+	memset(&g_config_param.led_work_mode,0,sizeof(g_config_param.led_work_mode));
 
 	flash_erase_sector(FLASH_CONFIG_ADDR);
 	FLASH_Printf("Init_flash_config len:%d\r\n",sizeof(g_config_param));

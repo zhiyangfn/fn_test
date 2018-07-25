@@ -35,7 +35,7 @@ int main (void) {
 	rf_drv_init(0);
 
 
-    user_init ();
+    user_init();
 
     systemFlashInit();
 

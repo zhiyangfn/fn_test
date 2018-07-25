@@ -36,14 +36,6 @@ u8 count_diy_color(u8 *color_cnt,u8 *color);
 #define LED_CHIP_MAX_NUM 60
 #define COLOR_TYPE_NUM_LIMITE 4
 
-typedef struct{
-	u8 diy_mode_ID;
-	u8 diy_mode;
-    u8 speed;
-    u8 color[5][3];
-}_diy_param_;
-_diy_param_ diy_param;
-
 enum _diy_mode
 {
 	Diy_Gradual=0,
@@ -72,7 +64,7 @@ void libDiyModeWorkThread()
 {
 	u8 diy_mode;
 	
-	diy_mode=diy_param.diy_mode;
+	diy_mode=g_config_param.led_work_mode.diy_mode.diy_master_mode;
 	
 	switch(diy_mode)
 	{
@@ -168,7 +160,7 @@ u8 count_diy_color(u8 *color_cnt,u8 *color)
 {
 	u8 i;
 	u8 get_color[COLOR_TYPE_NUM_LIMITE][COLOR_BYTES]={{0,0,0},{0,0,0},{0,0,0},{0,0,0}};
-	memcpy(get_color,diy_param.color,COLOR_TYPE_NUM_LIMITE*COLOR_BYTES);
+	memcpy(get_color,g_config_param.led_work_mode.diy_mode.diy_color,COLOR_TYPE_NUM_LIMITE*COLOR_BYTES);
 	for(i=0;i<COLOR_TYPE_NUM_LIMITE;i++)//count the vaild color numbers
 	{
 		if(get_color[i][0] == 0 && get_color[i][1] == 0 && get_color[i][2] == 0)
@@ -194,7 +186,7 @@ void setDiyGradualMode()
 	u8 color_cnt=0;
 	u8 grad_step;
 
-	speed=diy_param.speed;
+	speed=g_config_param.led_work_mode.diy_mode.diy_speed;
 	if(speed > 100)
 		speed=100;
 	grad_step=1;
@@ -271,7 +263,7 @@ void setDiyJumpingMode()
 
 	//speed 100-0 equal to 500ms-10.5s
 	//speed=g_config_param.led_work_mode.diy_mode.diy_speed;
-	speed =diy_param.speed;
+	speed =g_config_param.led_work_mode.diy_mode.diy_speed;
 	if(speed >= 100)
 		speed=100;
 	if(libDelayms(100*(100-speed)+500) == 0 && reset_diy_mode == 0)
@@ -313,7 +305,7 @@ void setDiyClickMode()
 	}
 
 	//speed=g_config_param.led_work_mode.diy_mode.diy_speed;
-	speed=diy_param.speed;
+	speed=g_config_param.led_work_mode.diy_mode.diy_speed;
 	if(speed >100)
 		speed=100;
 	if((color_filcker_status_cnt > (100-speed)/5) && reset_diy_mode == 0)//color_filcker_status_cnt reach speed,light led,else close the led
@@ -352,14 +344,14 @@ void diyModeDetailPrintf()
 void libDiyLightSetParams(u8 *params)
 {
 	u8 i;
-	memcpy(&diy_param,params,19);
-	diyPrintf("diy mode ID=  %d \n",diy_param.diy_mode_ID);
-	diyPrintf("diy mode =  %d \n",diy_param.diy_mode);
-	diyPrintf("diy mode speed =  %d \n",diy_param.speed);
-	for(i=0;i<4;i++)
-	{
-		diyPrintf("color %d = %d  %d  %d \n",i,diy_param.color[i][0],diy_param.color[i][1],diy_param.color[i][2]);
-	}
+	//memcpy(&diy_param,params,19);
+	//diyPrintf("diy mode ID=  %d \n",diy_param.diy_mode_ID);
+	//diyPrintf("diy mode =  %d \n",diy_param.diy_mode);
+	//diyPrintf("diy mode speed =  %d \n",diy_param.speed);
+	//for(i=0;i<4;i++)
+	//{
+	//	diyPrintf("color %d = %d  %d  %d \n",i,diy_param.color[i][0],diy_param.color[i][1],diy_param.color[i][2]);
+	//}
 	/*typedef struct{
 		u8 diy_mode;
 	    u8 speed;

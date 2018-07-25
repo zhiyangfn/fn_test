@@ -170,7 +170,7 @@ enum{
 #define PAIR_VALID_FLAG						0xFA
 //u8 advData[] = {0x02, 0x01, 0x05};
 //0~max_mesh_name_len bytes  (strlen(advData) + strlen(MESH_NAME) + sizeof(ll_adv_private_t))<=31
-#define MESH_NAME							"ihoment_mesh2"
+#define MESH_NAME							"ihoment_mesh3"
 //max 16 bytes
 #define MESH_PWD							"123"
 //max 16 bytes
@@ -178,7 +178,7 @@ enum{
 //max 16 bytes, random data from master
 #define MESH_LTK							0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7, 0xd8, 0xd9, 0xda, 0xdb, 0xdc, 0xdd, 0xde, 0xdf
 
-#define OUT_OF_MESH						    "ihoment_mesh2"
+#define OUT_OF_MESH						    "ihoment_mesh3"
 
 #define	LIGHT_MODE_DIM	    1
 #define	LIGHT_MODE_CCT	    2

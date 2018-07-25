@@ -26,13 +26,49 @@ enum _status_station_{
 	WHITE_MODE
 };
 
+typedef struct _scene_mode_t
+{
+	char mode;	
+
+}scene_mode_t;
+
+typedef struct _diy_mode_t
+{
+	char serial_id;//diy serial id number,set by phone and return to phone
+	char diy_master_mode;
+	char diy_speed;
+	char diy_color[4][3];//
+
+}diy_mode_t;
+
+typedef struct _ct_white_mode_t
+{
+	char cool_white_lum;
+	char warm_white_lum;
+}ct_white_mode_t;
+
+typedef struct _color_mode_t
+{
+	char color_RGB[3];
+}color_mode_t;
+
+typedef struct _led_work_mode_t
+{
+	char mode;
+	scene_mode_t scene_mode;
+	diy_mode_t diy_mode;
+	ct_white_mode_t ct_white_mode;	
+	color_mode_t color_mode;
+}led_work_mode_t;
+
 typedef struct _config_parameter_t
 {
 	u8 flash_init[4];
 	u8 led_status;
 	u8 status_station;
 	u8 uid[8];
-	u8 param_buf[20];
+	led_work_mode_t led_work_mode;
+	//u8 param_buf[20];
 }config_parameter_t;
 
 typedef struct _device_parameter_t

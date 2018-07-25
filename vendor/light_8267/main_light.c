@@ -961,12 +961,12 @@ void rf_link_data_callback (u8 *p)
         		if(params[0] == LIGHT_DEL_GRP_PARAM){
         			extern u8 rf_link_del_group(u16 group);
         			if(rf_link_del_group(val)){
-        			    cfg_led_event(LED_EVENT_FLASH_1HZ_4S);
+        			    //cfg_led_event(LED_EVENT_FLASH_1HZ_4S);
         			}
         		}else if(params[0] == LIGHT_ADD_GRP_PARAM){
         			extern u8 rf_link_add_group(u16 group);
         			if(rf_link_add_group(val)){
-        			    cfg_led_event(LED_EVENT_FLASH_1HZ_4S);
+        			    //cfg_led_event(LED_EVENT_FLASH_1HZ_4S);
         			}
         		}
         	}else if (op == LGT_CMD_CONFIG_DEV_ADDR){
@@ -1092,6 +1092,7 @@ void rf_link_data_callback (u8 *p)
         	    irq_disable();
         	    void kick_out(u8 par);
         	    kick_out(params[0]);
+				initFlashConfig();
         	    light_sw_reboot();
         	}
 #if(ALARM_EN)
@@ -1103,18 +1104,18 @@ void rf_link_data_callback (u8 *p)
         	    if(0 == rtc_set_time((rtc_t *)params)){
         	        //ok
         	        check_event_after_set_time(&rtc_new, &rtc_old);
-                    cfg_led_event(LED_EVENT_FLASH_1HZ_3T);
+                    //cfg_led_event(LED_EVENT_FLASH_1HZ_3T);
         	    }else{
         	        //invalid params
-                    cfg_led_event(LED_EVENT_FLASH_4HZ_3T);
+                    //cfg_led_event(LED_EVENT_FLASH_4HZ_3T);
         	    }
         	}
         	else if (op == LGT_CMD_ALARM)
         	{
         	    if(0 == alarm_ev_callback((u8*)params)){
-                    cfg_led_event(LED_EVENT_FLASH_1HZ_3T);
+                    //cfg_led_event(LED_EVENT_FLASH_1HZ_3T);
         	    }else{
-                    cfg_led_event(LED_EVENT_FLASH_4HZ_3T);
+                    //cfg_led_event(LED_EVENT_FLASH_4HZ_3T);
         	    }
         	}
 #endif        	
@@ -1129,14 +1130,14 @@ void rf_link_data_callback (u8 *p)
             	            && pData->rgb[1] <= 0xFF
             	            && pData->rgb[2] <= 0xFF){
                         if(scene_add(pData)){
-                            cfg_led_event(LED_EVENT_FLASH_1HZ_3T);
+                            //cfg_led_event(LED_EVENT_FLASH_1HZ_3T);
                         }
         	        }
         	            
         	    }else if(params[0] == SCENE_DEL){
         	        // del scene
         	        if(scene_del(params[1])){
-                        cfg_led_event(LED_EVENT_FLASH_1HZ_3T);
+                        //cfg_led_event(LED_EVENT_FLASH_1HZ_3T);
         	        }
         	    }
         	}
@@ -1812,4 +1813,14 @@ void setCTValue(u8 color_tem)
 		pwm_set_lum (PWMID_W, get_pwm_cmp((100)*255/100,led_lum), 0);
 	}
 
+}
+u8 getLumValue()
+{
+	return led_lum;
+}
+void getRGBValue(u8 *RGB_buf)
+{
+	RGB_buf[0]=led_val[0];
+	RGB_buf[1]=led_val[1];
+	RGB_buf[2]=led_val[2];
 }

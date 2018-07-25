@@ -69,8 +69,8 @@
 #define         LGT_CMD_LOAD_SCENE              0x2f
 #define         LGT_CMD_SCENE_MODE              0x30//set scene mode,add by fn in 20180717
 #define         LGT_CMD_DIY_MODE              	0x31//set diy mode ,add by fn in 20180717
-#define         LGT_CMD_GET_OWN_VERSION         0x32//get version,add by fn in 20180717
-#define			LGT_CMD_SET_GET_UID				0X33//get or set unique ID,add by fn in 20180717
+#define			LGT_CMT_SET_UID					0x32//add set uid ,add by fn in 20180717
+#define         LGT_CMD_GET_INFORMATION         0x3f//get version,add by fn in 20180717
 //------jump to 0x00
 //------0x30 ~ 0x3f for customer
 
