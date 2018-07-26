@@ -76,8 +76,9 @@ typedef struct _device_parameter_t
 	u8 flash_init[4];
 	u8 production[4];//production name
 	u8 subproduction[4];//sub production name
-	u8 production_date[8];
 	u8 hw_version[4];//hradware version
+	u8 production_date[8];
+	
 }device_parameter_t;
 
 
